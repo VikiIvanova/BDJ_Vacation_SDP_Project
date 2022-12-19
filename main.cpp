@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "skipList.h"
 
 int main()
 {
@@ -12,7 +13,7 @@ int main()
 
     //списък от n низа, съставени от малки и главни латински букви, 
     //и представляващи имената на последователните градове, през които пътническият влак минава
-    std::vector<std::string> listOfTown;
+    /*std::vector<std::string> listOfTown;
     std::cout << "Имената на градовете: ";
     size_t count = 0;
     while(count < n)
@@ -28,8 +29,31 @@ int main()
     {
         std::cout << i << ' ';
     }
-    std::cout << std::endl;
+    std::cout << std::endl;*/
 
+    skipList<std::string> list;
+    std::cout << "Имената на градовете: ";
+    size_t count = 0;
+    while(count < n)
+    {
+        std::string temp;
+        std::cin >> temp;
+        list.pushElementInList(temp);
+        count++;
+    }
+    list.printSkipList();
+
+    std::cout << "Директни връзки: ";
+    std::string currentTown, skipTown;
+    while(std::cin >> currentTown >> skipTown)
+    {
+      //std::cin >> currentTown >> skipTown;
+      list.addSkipRelation(currentTown, skipTown);
+    }
+    std::cout << std::endl;
+    list.printSkipList();
+    std::cout << std::endl;
+    list.printSkipping();
 
     return 0;
 }

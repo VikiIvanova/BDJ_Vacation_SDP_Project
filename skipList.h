@@ -26,26 +26,62 @@ class skipList
     public:
     skipList();
     skipList(const skipList& other);
+    skipList& operator= (const skipList& other);
     ~skipList();
 
-    skipList& operator= (const skipList& other);
-
-    size_t getSize() const;
+     size_t getSize() const;
     size_t getNumSkipElemensts() const;
     
+    void pushElementInList(T element);
+    void addSkipRelation(T currentTown, T skipTown);
+
     Box* locate(const T& element) const;
     bool member (const T& element) const;
     void optimize();
     void addElementAt(const T& element, Box*& at);
     void addElement(const T& element);
-
+    
     void printSkipList() const;
     void printSkipping() const;
 
 };
 
 template<typename T>
-void skipList::copy(const skipList& other)
+void skipList<T>::pushElementInList(T element)
+{
+    Box* box = new Box(element, nullptr);
+    if(start == nullptr)
+    {
+        start = box;
+        return;
+    }   
+
+    Box *current = start;
+    while(current->next)
+    {
+        current = current->next;
+    }
+    current-> next = box;
+}
+
+template<typename T>
+void skipList<T>::addSkipRelation(T currentTown, T skipTown)
+{
+    Box* tempCurrentTown = start;
+    while(tempCurrentTown->data != currentTown)
+    {
+       tempCurrentTown = tempCurrentTown->next;
+    }
+    Box* tempSkipTown = start;
+    while(tempSkipTown->data != skipTown)
+    {
+        tempSkipTown = tempSkipTown->next;
+    }
+    tempCurrentTown->skip = tempSkipTown;
+}
+
+template<typename T>
+void skipList<T>::copy(const skipList& other)
 {
     if(!other.start)
     {
@@ -67,7 +103,7 @@ void skipList::copy(const skipList& other)
 }
 
 template<typename T>
-void skipList::clear()
+void skipList<T>::clear()
 {
     while(start)
     {
@@ -79,22 +115,22 @@ void skipList::clear()
 }
 
 template<typename T>
-skipList::skipList():start{nullptr}, size{0} {}
+skipList<T>::skipList():start{nullptr}, size{0} {}
 
 template<typename T>
-skipList::skipList(const skipList& other): start{nullptr}, size{0}
+skipList<T>::skipList(const skipList& other): start{nullptr}, size{0}
 {
    this->copy(other);
 }
 
 template<typename T>
-skipList::~skipList()
+skipList<T>::~skipList()
 {
     this->clear();
 }
 
 template<typename T>
-skipList& skipList::operator=(const skipList& other)
+skipList<T>& skipList<T>::operator=(const skipList<T>& other)
 {
     if(this != &other)
     {
@@ -105,13 +141,13 @@ skipList& skipList::operator=(const skipList& other)
 }
 
 template<typename T>
-size_t skipList::getSize() const
+size_t skipList<T>::getSize() const
 {
     return size;
 }
 
 template<typename T>
-size_t skipList::getNumSkipElemensts() const
+size_t skipList<T>::getNumSkipElemensts() const
 {
     size_t numSkips = 0;
     Box* temp = start;
@@ -124,7 +160,7 @@ size_t skipList::getNumSkipElemensts() const
 }
 
 template<typename T>
-skipList::Box* skipList::locate(const T& element) const
+typename skipList<T>::Box* skipList<T>::locate(const T& element) const
 {
     if(!start || start->data > element)
     {
@@ -146,14 +182,14 @@ skipList::Box* skipList::locate(const T& element) const
 }
 
 template<typename T>
-bool skipList::member(const T& element) const
+bool skipList<T>::member(const T& element) const
 {
     Box* locateAt = locate(element);
     return locateAt && locateAt->data == element;
 }
 
 template<typename T>
-void skipList::optimize()
+void skipList<T>::optimize()
 {
     size_t skipNum = sqrt(size), curNum = 0;
     Box* temp = start->next;
@@ -174,7 +210,7 @@ void skipList::optimize()
 }
 
 template<typename T>
-void skipList::addElement(const T& element, Box*& at)
+void skipList<T>::addElementAt(const T& element, Box*& at)
 {
     if(!at)
     {
@@ -189,7 +225,7 @@ void skipList::addElement(const T& element, Box*& at)
 }
 
 template<typename T>
-void skipList::addElement(const int& element)
+void skipList<T>::addElement(const T& element)
 {
     Box* at = locate(element);
     addElement(element);
@@ -197,7 +233,7 @@ void skipList::addElement(const int& element)
 }
 
 template<typename T>
-void skipList::printSkipList() const
+void skipList<T>::printSkipList() const
 {
     Box* temp = start;
     while(temp)
@@ -209,13 +245,18 @@ void skipList::printSkipList() const
 }
 
 template<typename T>
-void skipList::printSkipping() const
+void skipList<T>::printSkipping() const
 {
     Box* temp = start;
     while(temp)
     {
         std::cout << temp->data << " ";
-        temp = temp->skip;
+        if(temp->skip)
+        {
+            std::cout << temp->skip->data << " ";
+        }
+        std::cout << std::endl;
+        temp = temp->next;
     }
     std::cout << std::endl;
 }
