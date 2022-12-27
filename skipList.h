@@ -11,17 +11,17 @@ template<typename T>
 class skipList
 {
     private:
-    struct Box
+    struct Node
     {
        T data;
-       Box* next;
-       Box* skip;
+       Node* next;
+       Node* skip;
 
-       Box(const T& _data, Box* _next):
+       Node(const T& _data, Node* _next):
            data {_data}, next {_next}, skip {nullptr} {}
     };
 
-    Box* start;
+    Node* start;
     size_t size;
 
     void clear();
@@ -40,10 +40,10 @@ class skipList
     void addSkipRelation(T currentTown, T skipTown);
     std::stack<std::string> shortestPathWithPriorityTowns(std::vector<std::string>& listOfTownsPriority);
 
-    Box* locate(const T& element) const;
+    Node* locate(const T& element) const;
     bool member (const T& element) const;
     void optimize();
-    void addElementAt(const T& element, Box*& at);
+    void addElementAt(const T& element, Node*& at);
     void addElement(const T& element);
     
     void printSkipList() const;
@@ -52,15 +52,15 @@ class skipList
 };
 
 template<typename T>
-void skipList<T>::addElementAt(const T& element, Box*& at)
+void skipList<T>::addElementAt(const T& element, Node*& at)
 {
     if(!at)
     {
-        start = new Box(element, start);
+        start = new Node(element, start);
     }
     else
     {
-        at->next = new Box(element, at->next);
+        at->next = new Node(element, at->next);
     }
 
     size++;
@@ -74,11 +74,11 @@ void skipList<T>::copy(const skipList& other)
         return;
     }
 
-    start = new Box (other.start->data, nullptr);
-    Box* prev = start;
+    start = new Node (other.start->data, nullptr);
+    Node* prev = start;
     size = 1;
 
-    Box* temp = other.start->next;
+    Node* temp = other.start->next;
     while(temp)
     {
         addElementAt(temp->data, prev);
@@ -93,7 +93,7 @@ void skipList<T>::clear()
 {
     while(start)
     {
-        Box* prev = start;
+        Node* prev = start;
         start = start->next;
         delete prev;
         size--;
@@ -129,7 +129,7 @@ skipList<T>& skipList<T>::operator=(const skipList<T>& other)
 template<typename T>
 void skipList<T>::printSkipList() const
 {
-    Box* temp = start;
+    Node* temp = start;
     while(temp)
     {
         std::cout << temp->data << " ";
@@ -141,7 +141,7 @@ void skipList<T>::printSkipList() const
 template<typename T>
 void skipList<T>::printSkipping() const
 {
-    Box* temp = start;
+    Node* temp = start;
     while(temp)
     {
         std::cout << temp->data << " ";
@@ -159,30 +159,30 @@ void skipList<T>::printSkipping() const
 template<typename T>
 void skipList<T>::pushElementInList(T element)
 {
-    Box* box = new Box(element, nullptr);
+    Node* node = new Node(element, nullptr);
     if(start == nullptr)
     {
-        start = box;
+        start = node;
         return;
     }   
 
-    Box *current = start;
+    Node *current = start;
     while(current->next)
     {
         current = current->next;
     }
-    current-> next = box;
+    current-> next = node;
 }
 
 template<typename T>
 void skipList<T>::addSkipRelation(T currentTown, T skipTown)
 {
-    Box* tempCurrentTown = start;
+    Node* tempCurrentTown = start;
     while(tempCurrentTown->data != currentTown)
     {
        tempCurrentTown = tempCurrentTown->next;
     }
-    Box* tempSkipTown = start;
+    Node* tempSkipTown = start;
     while(tempSkipTown->data != skipTown)
     {
         tempSkipTown = tempSkipTown->next;
@@ -196,7 +196,7 @@ std::stack<std::string> skipList<T>::shortestPathWithPriorityTowns(std::vector<s
     std::stack<std::string> path;
     std::vector<std::pair<std::string, std::string>> skips;
 
-    Box* current = start;
+    Node* current = start;
     while(current)
     {
         for(std::pair<std::string, std::string> element : skips)
