@@ -2,6 +2,10 @@
 #define __SKIPLIST_H
 
 #include <cmath>
+#include <vector>
+#include <string>
+#include <stack>
+#include <utility>
 
 template<typename T>
 class skipList
@@ -29,11 +33,12 @@ class skipList
     skipList& operator= (const skipList& other);
     ~skipList();
 
-     size_t getSize() const;
+    size_t getSize() const;
     size_t getNumSkipElemensts() const;
     
     void pushElementInList(T element);
     void addSkipRelation(T currentTown, T skipTown);
+    std::stack<std::string> shortestPathWithPriorityTowns(std::vector<std::string>& listOfTownsPriority);
 
     Box* locate(const T& element) const;
     bool member (const T& element) const;
@@ -47,37 +52,18 @@ class skipList
 };
 
 template<typename T>
-void skipList<T>::pushElementInList(T element)
+void skipList<T>::addElementAt(const T& element, Box*& at)
 {
-    Box* box = new Box(element, nullptr);
-    if(start == nullptr)
+    if(!at)
     {
-        start = box;
-        return;
-    }   
+        start = new Box(element, start);
+    }
+    else
+    {
+        at->next = new Box(element, at->next);
+    }
 
-    Box *current = start;
-    while(current->next)
-    {
-        current = current->next;
-    }
-    current-> next = box;
-}
-
-template<typename T>
-void skipList<T>::addSkipRelation(T currentTown, T skipTown)
-{
-    Box* tempCurrentTown = start;
-    while(tempCurrentTown->data != currentTown)
-    {
-       tempCurrentTown = tempCurrentTown->next;
-    }
-    Box* tempSkipTown = start;
-    while(tempSkipTown->data != skipTown)
-    {
-        tempSkipTown = tempSkipTown->next;
-    }
-    tempCurrentTown->skip = tempSkipTown;
+    size++;
 }
 
 template<typename T>
@@ -141,98 +127,6 @@ skipList<T>& skipList<T>::operator=(const skipList<T>& other)
 }
 
 template<typename T>
-size_t skipList<T>::getSize() const
-{
-    return size;
-}
-
-template<typename T>
-size_t skipList<T>::getNumSkipElemensts() const
-{
-    size_t numSkips = 0;
-    Box* temp = start;
-    while(temp)
-    {
-        temp = temp->data;
-        numSkips++;
-    }
-    return numSkips;
-}
-
-template<typename T>
-typename skipList<T>::Box* skipList<T>::locate(const T& element) const
-{
-    if(!start || start->data > element)
-    {
-        return nullptr;
-    }
-
-    Box* temp = start;
-    while(start->skip && temp->skip->data <= element)
-    {
-        temp = temp->skip;
-    }
-    
-    while(temp->next && temp->next->data <= element)
-    {
-        temp = temp->next;
-    }
-
-    return temp;
-}
-
-template<typename T>
-bool skipList<T>::member(const T& element) const
-{
-    Box* locateAt = locate(element);
-    return locateAt && locateAt->data == element;
-}
-
-template<typename T>
-void skipList<T>::optimize()
-{
-    size_t skipNum = sqrt(size), curNum = 0;
-    Box* temp = start->next;
-    Box* prevToSkip = start;
-
-    while(temp)
-    {
-        temp->skip = nullptr;
-        curNum++;
-        if(curNum % skipNum == 0 || curNum+1 == size)
-        {
-            prevToSkip->skip = temp;
-            prevToSkip = temp;
-        }
-
-        temp = temp->next;
-    }
-}
-
-template<typename T>
-void skipList<T>::addElementAt(const T& element, Box*& at)
-{
-    if(!at)
-    {
-        start = new Box(element, start);
-    }
-    else
-    {
-        at->next = new Box(element, at->next);
-    }
-
-    size++;
-}
-
-template<typename T>
-void skipList<T>::addElement(const T& element)
-{
-    Box* at = locate(element);
-    addElement(element);
-    optimize();
-}
-
-template<typename T>
 void skipList<T>::printSkipList() const
 {
     Box* temp = start;
@@ -262,5 +156,76 @@ void skipList<T>::printSkipping() const
 }
 
 
+template<typename T>
+void skipList<T>::pushElementInList(T element)
+{
+    Box* box = new Box(element, nullptr);
+    if(start == nullptr)
+    {
+        start = box;
+        return;
+    }   
+
+    Box *current = start;
+    while(current->next)
+    {
+        current = current->next;
+    }
+    current-> next = box;
+}
+
+template<typename T>
+void skipList<T>::addSkipRelation(T currentTown, T skipTown)
+{
+    Box* tempCurrentTown = start;
+    while(tempCurrentTown->data != currentTown)
+    {
+       tempCurrentTown = tempCurrentTown->next;
+    }
+    Box* tempSkipTown = start;
+    while(tempSkipTown->data != skipTown)
+    {
+        tempSkipTown = tempSkipTown->next;
+    }
+    tempCurrentTown->skip = tempSkipTown;
+}
+
+template<typename T>
+std::stack<std::string> skipList<T>::shortestPathWithPriorityTowns(std::vector<std::string>& listOfTownsPriority)
+{
+    std::stack<std::string> path;
+    std::vector<std::pair<std::string, std::string>> skips;
+
+    Box* current = start;
+    while(current)
+    {
+        for(std::pair<std::string, std::string> element : skips)
+        {
+            if(element.second == current->data)
+            {
+               while(path.top() != element.first)
+               {
+                  path.pop();
+               }
+            }
+        }
+        for(std::string town : listOfTownsPriority)
+        {
+            if(town == current->data)
+            {
+                skips.clear();
+                break;
+            }
+        }
+        //възможна е оптимизация като трием ненужните скип връзки
+        if(current->skip)
+        {
+            skips.push_back({current->data, current->skip->data});
+        }
+        path.push(current->data);
+        current = current->next;
+    }          
+    return path;
+}
 
 #endif

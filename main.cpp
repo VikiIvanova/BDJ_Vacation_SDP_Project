@@ -46,20 +46,20 @@ int main()
         listOfTownsPriority.push_back(currentInput);
     }
     std::cout << "----------------------------------" << std::endl;
-    std::cout << "Изпечатва всички градове: ";
-    list.printSkipList();
-    std::cout << std::endl;
-    std::cout << "Изпечатва директните връзки: ";
-    list.printSkipping();
 
-    std::cout << "Изпечатва градовете, през които иска да преминат Аня и Ванката: ";
-    for(std::string i : listOfTownsPriority)
+    std::stack<std::string> pathReverse = list.shortestPathWithPriorityTowns(listOfTownsPriority);
+    std::stack<std::string> path;
+    while(!pathReverse.empty())
     {
-        std::cout << i << ' ';
+        path.push(pathReverse.top());
+        pathReverse.pop();
+    }
+    while(!path.empty())
+    {
+        std::cout << path.top() << ' ';
+        path.pop();
     }
     std::cout << std::endl;
-
-    
 
     return 0;
 }
