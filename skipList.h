@@ -33,16 +33,10 @@ class skipList
     skipList& operator= (const skipList& other);
     ~skipList();
 
-    size_t getSize() const;
-    size_t getNumSkipElemensts() const;
-    
     void pushElementInList(T element);
     void addSkipRelation(T currentTown, T skipTown);
     std::stack<std::string> shortestPathWithPriorityTowns(std::vector<std::string>& listOfTownsPriority);
 
-    Node* locate(const T& element) const;
-    bool member (const T& element) const;
-    void optimize();
     void addElementAt(const T& element, Node*& at);
     void addElement(const T& element);
     
