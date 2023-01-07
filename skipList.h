@@ -79,7 +79,7 @@ void skipList<T>::copy(const skipList& other)
         prev = prev->next;
         temp = temp->next;
     }
-    optimize();
+    //optimize();
 }
 
 template<typename T>
