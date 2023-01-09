@@ -122,7 +122,7 @@ std::vector<Box> boxesListCreateInternalBox(const std::string &boxesList)
             std::string boxLabel;
             file >> boxLabel;
 
-            // In the vector of boxes of the current, add its inner boxes
+            // In the vector of boxes of the current box, add its inner boxes
             for (int m = 0; m < allBoxes.size(); m++)
             {
                 if (boxLabel == allBoxes[m].label)
@@ -151,7 +151,7 @@ bool optimizeBoxesHelper(Box *current, Box *parent, std::vector<Box *> &allBoxes
     }
 
     std::vector<Box *> toDeleteBoxes;
-    // Through the recursion we reach the inner box and if we find a box to be deleted we add it to the vector
+    // Through the recursion we reach the most inner box and if we find a box to be deleted we add it to the vector
     for (int i = 0; i < current->boxes.size(); ++i)
     {
         bool toDelete = optimizeBoxesHelper(current->boxes[i], current, allBoxes);
@@ -160,7 +160,7 @@ bool optimizeBoxesHelper(Box *current, Box *parent, std::vector<Box *> &allBoxes
             toDeleteBoxes.push_back(current->boxes[i]);
         }
     }
-    // delete unnecessary boxes from the vector containing the current boxes and vector with all boxes
+    // delete unnecessary boxes from the vector of current inner boxes and vector with all boxes
     for (int j = 0; j < toDeleteBoxes.size(); ++j)
     {
         int index;

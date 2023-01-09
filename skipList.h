@@ -193,7 +193,7 @@ std::stack<std::string> skipList<T>::shortestPathWithPriorityCities(std::vector<
     Node *current = start;
     while (current)
     {
-        // Remove unnecessary cities from the path if we found a link
+        // Remove unnecessary cities from the path if we find a link
         // that we can use without missing cities from Anya and Vanka's list
         for (std::pair<std::string, std::string> element : skips)
         {
@@ -205,7 +205,7 @@ std::stack<std::string> skipList<T>::shortestPathWithPriorityCities(std::vector<
                 }
             }
         }
-        // If the current city is one of the list, delete the vector of links because we won't be able to use them
+        // If the current city is one from the list, delete the vector of links because we won't be able to use them
         for (std::string town : listOfCitiesPriority)
         {
             if (town == current->data)
