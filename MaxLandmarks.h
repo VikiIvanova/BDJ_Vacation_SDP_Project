@@ -6,12 +6,6 @@
 #include <queue>
 #include <set>
 
-// struct Landmark
-// {
-//     std::string name;
-//     // int time;
-// };
-
 struct Route
 {
     std::string start;
@@ -26,6 +20,7 @@ struct City
     int timeAvailable;
 };
 
+// Read information for city
 City readCity(const std::string &filename)
 {
     City city;
@@ -37,14 +32,6 @@ City readCity(const std::string &filename)
 
     int numLandmarks, numRoutes;
     file >> numLandmarks >> numRoutes;
-
-    // for (int i = 0; i < numLandmarks; ++i)
-    // {
-    //     Landmark landmark;
-    //     file >> landmark.name >> landmark.time;
-    //     city.landmarks.push_back(landmark);
-    // }
-
     for (int i = 0; i < numRoutes; ++i)
     {
         Route route;
@@ -57,10 +44,11 @@ City readCity(const std::string &filename)
     return city;
 }
 
+// Create graph
 std::unordered_map<std::string, std::unordered_map<std::string, int>> graphBuild(const City &city)
 {
     std::unordered_map<std::string, std::unordered_map<std::string, int>> graph;
-    for (const auto &route : city.routes)
+    for (const Route &route : city.routes)
     {
         graph[route.start][route.end] = route.time;
         graph[route.end][route.start] = route.time;
@@ -68,7 +56,8 @@ std::unordered_map<std::string, std::unordered_map<std::string, int>> graphBuild
     return graph;
 }
 
-std::vector<std::string> findRoute(const City &city)
+// Find the shortest path to a given city
+std::vector<std::string> findRoute(const City &city, std::string destination)
 {
     std::unordered_map<std::string, std::unordered_map<std::string, int>> graph = graphBuild(city);
     std::unordered_map<std::string, int> times;
@@ -76,7 +65,7 @@ std::vector<std::string> findRoute(const City &city)
     std::priority_queue<std::pair<int, std::string>> pq;
 
     // Initialize times and previous values
-    for (const auto &landmark : city.landmarks)
+    for (const std::string &landmark : city.landmarks)
     {
         times[landmark] = std::numeric_limits<int>::max();
         previous[landmark] = "";
@@ -88,19 +77,13 @@ std::vector<std::string> findRoute(const City &city)
     while (!pq.empty())
     {
         // Find the landmark with the smallest time
-        auto current = pq.top();
+        std::pair<int, std::string> current = pq.top();
         pq.pop();
 
-        // If the current landmark is the end landmark, we have found the shortest route
-        // if (current.second == city.end)
-        // {
-        //     break;
-        // }
-
         // Update times and previous values for neighboring landmarks
-        for (const auto &neighbor : graph[current.second])
+        for (const std::pair<const std::string, int> &neighbor : graph[current.second])
         {
-            auto alt = times[current.second] + neighbor.second;
+            int alt = times[current.second] + neighbor.second;
             if (alt < times[neighbor.first])
             {
                 times[neighbor.first] = alt;
@@ -110,12 +93,16 @@ std::vector<std::string> findRoute(const City &city)
         }
     }
 
-    // Construct the shortest route by following the
+    // Construct the shortest route
     std::vector<std::string> route;
-    for (std::string landmark = "Railstation"; landmark != ""; landmark = previous[landmark])
+    std::string landmark = destination;
+    route.push_back(landmark);
+    while (previous[landmark] != "Railstation")
     {
-        route.push_back(landmark);
+        route.push_back(previous[landmark]);
+        landmark = previous[landmark];
     }
+    route.push_back("Railstation");
     std::reverse(route.begin(), route.end());
 
     return route;

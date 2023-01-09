@@ -19,22 +19,24 @@ public:
     Box(std::string label, std::vector<std::string> souvenirs, std::vector<Box *> boxes) : label(label), souvenirs(souvenirs), boxes(boxes) {}
     void printBox();
     friend void optimizeBoxes(std::vector<Box *> &boxes);
-    friend bool optimizeBoxesHelper(Box* current, Box* parent, std::vector<Box *> &allBoxes);
+    friend bool optimizeBoxesHelper(Box *current, Box *parent, std::vector<Box *> &allBoxes);
     friend std::vector<Box> boxesListCreate(const std::string &boxesList);
+    friend std::vector<Box> boxesListCreateInternalBox(const std::string &boxesList);
 };
 
 Box::Box() {}
 
+// Print function for box
 void Box::printBox()
 {
     std::cout << label << std::endl;
-    std::cout << "souvenirs: ";
+    std::cout << "Souvenirs: ";
     for (int i = 0; i < souvenirs.size(); i++)
     {
         std::cout << souvenirs[i] << " ";
     }
     std::cout << std::endl;
-    std::cout << "boxes: ";
+    std::cout << "Boxes: ";
     for (int i = 0; i < boxes.size(); i++)
     {
         std::cout << boxes[i]->label << " ";
@@ -42,6 +44,7 @@ void Box::printBox()
     std::cout << std::endl;
 }
 
+// Create list of boxes
 std::vector<Box> boxesListCreate(const std::string &boxesList)
 {
     std::vector<Box> allBoxes;
@@ -66,10 +69,11 @@ std::vector<Box> boxesListCreate(const std::string &boxesList)
             souvenirs.push_back(souvenir);
         }
         file >> boxCount;
+        // create vector for internal boxes, but in this step only read label
         std::vector<Box *> internalBoxes;
         for (int k = 0; k < boxCount; k++)
         {
-            std::string boxLabel; // тук четем само какъв е етикета за всяка вътрешна кутия и продължаваме, вътрешните прзни ли са?
+            std::string boxLabel;
             file >> boxLabel;
         }
         Box currentBox = Box(label, souvenirs, internalBoxes);
@@ -77,20 +81,29 @@ std::vector<Box> boxesListCreate(const std::string &boxesList)
     }
     file.close();
 
-    std::ifstream file2(boxesList);
-    if (!file2.is_open())
+    return allBoxes;
+}
+
+// Function for create and add the inner boxes
+std::vector<Box> boxesListCreateInternalBox(const std::string &boxesList)
+{
+    std::vector<Box> allBoxes = boxesListCreate(boxesList);
+    std::ifstream file(boxesList);
+    if (!file.is_open())
     {
         return allBoxes;
     }
-
-    file2 >> numBoxes;
+    int numBoxes;
+    file >> numBoxes;
     for (int i = 0; i < numBoxes; i++)
     {
         std::string label;
         int souvenirCount, boxCount;
-        file2 >> label >> souvenirCount;
+        file >> label >> souvenirCount;
 
-        Box* currentBox; // указател е, за да не правим нов обект, на който референция е някъде другаде и след цикъла този обект не съществува
+        Box *currentBox; // if it is an object after the loop it will not exist
+
+        // Find the reference of the current box
         for (int b = 0; b < allBoxes.size(); b++)
         {
             if (label == allBoxes[b].label)
@@ -101,33 +114,36 @@ std::vector<Box> boxesListCreate(const std::string &boxesList)
         for (int j = 0; j < souvenirCount; j++)
         {
             std::string souvenir;
-            file2 >> souvenir;
+            file >> souvenir;
         }
-        file2 >> boxCount;
+        file >> boxCount;
         for (int k = 0; k < boxCount; k++)
         {
             std::string boxLabel;
-            file2 >> boxLabel;
+            file >> boxLabel;
 
-            for (int m = 0; m < allBoxes.size(); m++) //за да можем да го вземем по референция
+            // In the vector of boxes of the current, add its inner boxes
+            for (int m = 0; m < allBoxes.size(); m++)
             {
                 if (boxLabel == allBoxes[m].label)
-                {       
+                {
                     currentBox->boxes.push_back(&allBoxes[m]);
                 }
             }
         }
     }
-    file2.close();
+    file.close();
 
     return allBoxes;
 }
 
-bool optimizeBoxesHelper(Box* current, Box* parent, std::vector<Box *> &allBoxes)
+// Optimize specific box
+bool optimizeBoxesHelper(Box *current, Box *parent, std::vector<Box *> &allBoxes)
 {
-    if(current->boxes.empty())
+    // if current box is empty and there are no souvenirs it should be removed, if there is we leave it
+    if (current->boxes.empty())
     {
-        if(current->souvenirs.empty())
+        if (current->souvenirs.empty())
         {
             return true;
         }
@@ -135,31 +151,31 @@ bool optimizeBoxesHelper(Box* current, Box* parent, std::vector<Box *> &allBoxes
     }
 
     std::vector<Box *> toDeleteBoxes;
+    // Through the recursion we reach the inner box and if we find a box to be deleted we add it to the vector
     for (int i = 0; i < current->boxes.size(); ++i)
     {
         bool toDelete = optimizeBoxesHelper(current->boxes[i], current, allBoxes);
         if (toDelete)
         {
             toDeleteBoxes.push_back(current->boxes[i]);
-           
         }
     }
-    //трием - махаме bags,...
-    for(int j = 0; j < toDeleteBoxes.size(); ++j)
+    // delete unnecessary boxes from the vector containing the current boxes and vector with all boxes
+    for (int j = 0; j < toDeleteBoxes.size(); ++j)
     {
         int index;
-        for(int k = 0; k < current->boxes.size(); ++k)
+        for (int k = 0; k < current->boxes.size(); ++k)
         {
-            if(toDeleteBoxes[j]->label == current->boxes[k]->label)
+            if (toDeleteBoxes[j]->label == current->boxes[k]->label)
             {
                 index = k;
             }
         }
         current->boxes.erase(current->boxes.begin() + index);
 
-        for(int k = 0; k < allBoxes.size(); ++k)
+        for (int k = 0; k < allBoxes.size(); ++k)
         {
-            if(toDeleteBoxes[j]->label == allBoxes[k]->label)
+            if (toDeleteBoxes[j]->label == allBoxes[k]->label)
             {
                 index = k;
             }
@@ -167,20 +183,19 @@ bool optimizeBoxesHelper(Box* current, Box* parent, std::vector<Box *> &allBoxes
         allBoxes.erase(allBoxes.begin() + index);
     }
 
-    // да се освободят всички кутийки в deleteBoxes като памет
-
-    //прехвърляме съдържанието на кутията в родителя, ако е само една и няма сувенири в нея
-    if(current->souvenirs.empty() && current->boxes.size() == 1 && parent)
+    // Transfer the contents of the box to the parent if it is only one and has no souvenirs in it
+    if (current->souvenirs.empty() && current->boxes.size() == 1 && parent)
     {
-         parent->boxes.push_back(current->boxes[0]);
-         return true;
+        parent->boxes.push_back(current->boxes[0]);
+        return true;
     }
     return false;
 }
 
-void optimizeBoxes(std::vector<Box*>& allBoxes)
+// Optimize all boxes
+void optimizeBoxes(std::vector<Box *> &allBoxes)
 {
-    for(int i = 0; i < allBoxes.size(); ++i)
+    for (int i = 0; i < allBoxes.size(); ++i)
     {
         optimizeBoxesHelper(allBoxes[i], nullptr, allBoxes);
     }

@@ -7,112 +7,107 @@
 #include <stack>
 #include <utility>
 
-template<typename T>
+template <typename T>
 class skipList
 {
-    private:
+private:
     struct Node
     {
-       T data;
-       Node* next;
-       Node* skip;
+        T data;
+        Node *next;
+        Node *skip;
 
-       Node(const T& _data, Node* _next):
-           data {_data}, next {_next}, skip {nullptr} {}
+        Node(const T &_data, Node *_next) : data{_data}, next{_next}, skip{nullptr} {}
     };
 
-    Node* start;
+    Node *start;
     size_t size;
 
     void clear();
-    void copy(const skipList& other);
+    void copy(const skipList &other);
 
-    public:
+public:
     skipList();
-    skipList(const skipList& other);
-    skipList& operator= (const skipList& other);
+    skipList(const skipList &other);
+    skipList &operator=(const skipList &other);
     ~skipList();
 
     void pushElementInList(T element);
     void addSkipRelation(T currentTown, T skipTown);
-    std::stack<std::string> shortestPathWithPriorityTowns(std::vector<std::string>& listOfTownsPriority);
+    std::stack<std::string> shortestPathWithPriorityCities(std::vector<std::string> &listOfTownsPriority);
 
-    void addElementAt(const T& element, Node*& at);
-    void addElement(const T& element);
-    
+    void addElement(const T &element);
+
     void printSkipList() const;
     void printSkipping() const;
-
 };
 
-template<typename T>
-void skipList<T>::addElementAt(const T& element, Node*& at)
+// helper function
+template <typename T>
+void skipList<T>::copy(const skipList &other)
 {
-    if(!at)
-    {
-        start = new Node(element, start);
-    }
-    else
-    {
-        at->next = new Node(element, at->next);
-    }
-
-    size++;
-}
-
-template<typename T>
-void skipList<T>::copy(const skipList& other)
-{
-    if(!other.start)
+    if (!other.start)
     {
         return;
     }
 
-    start = new Node (other.start->data, nullptr);
-    Node* prev = start;
+    start = new Node(other.start->data, nullptr);
+    Node *prev = start;
     size = 1;
 
-    Node* temp = other.start->next;
-    while(temp)
+    Node *temp = other.start->next;
+    while (temp)
     {
-        addElementAt(temp->data, prev);
+        if (!prev)
+        {
+            start = new Node(temp->data, start);
+        }
+        else
+        {
+            prev->next = new Node(temp->data, prev->next);
+        }
+        size++;
         prev = prev->next;
         temp = temp->next;
     }
-    //optimize();
 }
 
-template<typename T>
+// helper function
+template <typename T>
 void skipList<T>::clear()
 {
-    while(start)
+    while (start)
     {
-        Node* prev = start;
+        Node *prev = start;
         start = start->next;
         delete prev;
         size--;
     }
 }
 
-template<typename T>
-skipList<T>::skipList():start{nullptr}, size{0} {}
+// constructor
+template <typename T>
+skipList<T>::skipList() : start{nullptr}, size{0} {}
 
-template<typename T>
-skipList<T>::skipList(const skipList& other): start{nullptr}, size{0}
+// copy constructor
+template <typename T>
+skipList<T>::skipList(const skipList &other) : start{nullptr}, size{0}
 {
-   this->copy(other);
+    this->copy(other);
 }
 
-template<typename T>
+// destructor
+template <typename T>
 skipList<T>::~skipList()
 {
     this->clear();
 }
 
-template<typename T>
-skipList<T>& skipList<T>::operator=(const skipList<T>& other)
+// operator=
+template <typename T>
+skipList<T> &skipList<T>::operator=(const skipList<T> &other)
 {
-    if(this != &other)
+    if (this != &other)
     {
         this->clear();
         this->copy(other);
@@ -120,11 +115,12 @@ skipList<T>& skipList<T>::operator=(const skipList<T>& other)
     return *this;
 }
 
-template<typename T>
+// Print function for listing all cities
+template <typename T>
 void skipList<T>::printSkipList() const
 {
-    Node* temp = start;
-    while(temp)
+    Node *temp = start;
+    while (temp)
     {
         std::cout << temp->data << " ";
         temp = temp->next;
@@ -132,14 +128,15 @@ void skipList<T>::printSkipList() const
     std::cout << std::endl;
 }
 
-template<typename T>
+// Print function for the pairs of cities with skip relation
+template <typename T>
 void skipList<T>::printSkipping() const
 {
-    Node* temp = start;
-    while(temp)
+    Node *temp = start;
+    while (temp)
     {
         std::cout << temp->data << " ";
-        if(temp->skip)
+        if (temp->skip)
         {
             std::cout << temp->skip->data << " ";
         }
@@ -149,76 +146,82 @@ void skipList<T>::printSkipping() const
     std::cout << std::endl;
 }
 
-
-template<typename T>
+// Add element in list
+template <typename T>
 void skipList<T>::pushElementInList(T element)
 {
-    Node* node = new Node(element, nullptr);
-    if(start == nullptr)
+    Node *node = new Node(element, nullptr);
+    if (start == nullptr)
     {
         start = node;
         return;
-    }   
+    }
 
     Node *current = start;
-    while(current->next)
+    while (current->next)
     {
         current = current->next;
     }
-    current-> next = node;
+    current->next = node;
 }
 
-template<typename T>
+// Function for add skip relation
+template <typename T>
 void skipList<T>::addSkipRelation(T currentTown, T skipTown)
 {
-    Node* tempCurrentTown = start;
-    while(tempCurrentTown->data != currentTown)
+    Node *tempCurrentTown = start;
+    while (tempCurrentTown->data != currentTown)
     {
-       tempCurrentTown = tempCurrentTown->next;
+        tempCurrentTown = tempCurrentTown->next;
     }
-    Node* tempSkipTown = start;
-    while(tempSkipTown->data != skipTown)
+    Node *tempSkipTown = start;
+    while (tempSkipTown->data != skipTown)
     {
         tempSkipTown = tempSkipTown->next;
     }
     tempCurrentTown->skip = tempSkipTown;
 }
 
-template<typename T>
-std::stack<std::string> skipList<T>::shortestPathWithPriorityTowns(std::vector<std::string>& listOfTownsPriority)
+// Function to find the shortest path passing throught the cities from the list of Anq and Vankata
+template <typename T>
+std::stack<std::string> skipList<T>::shortestPathWithPriorityCities(std::vector<std::string> &listOfCitiesPriority)
 {
     std::stack<std::string> path;
+    // in the vector keep pair of the start and end cities of the skip relation
     std::vector<std::pair<std::string, std::string>> skips;
 
-    Node* current = start;
-    while(current)
+    Node *current = start;
+    while (current)
     {
-        for(std::pair<std::string, std::string> element : skips)
+        // Remove unnecessary cities from the path if we found a link
+        // that we can use without missing cities from Anya and Vanka's list
+        for (std::pair<std::string, std::string> element : skips)
         {
-            if(element.second == current->data)
+            if (element.second == current->data)
             {
-               while(path.top() != element.first)
-               {
-                  path.pop();
-               }
+                while (path.top() != element.first)
+                {
+                    path.pop();
+                }
             }
         }
-        for(std::string town : listOfTownsPriority)
+        // If the current city is one of the list, delete the vector of links because we won't be able to use them
+        for (std::string town : listOfCitiesPriority)
         {
-            if(town == current->data)
+            if (town == current->data)
             {
                 skips.clear();
                 break;
             }
         }
-        //възможна е оптимизация като трием ненужните скип връзки
-        if(current->skip)
+        // If the current city has a skip link, add it to the vector
+        if (current->skip)
         {
             skips.push_back({current->data, current->skip->data});
         }
         path.push(current->data);
         current = current->next;
-    }          
+    }
     return path;
 }
 
